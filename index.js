@@ -1,36 +1,48 @@
 const express = require("express");
 const nodemailer = require("nodemailer");
+const bodyPaser = require("body-parser");
+const { email, password } = require("./config");
 
 const app = express();
+app.use(bodyPaser.json());
+
 const port = process.env.PORT || 4000;
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
+  host: "smtp.gmail.com",
   port: 465,
   secure: true,
   service: "gmail",
   auth: {
-    user: "sang.lequang98@gmail.com",
-    pass: `thuychung`
+    user: email,
+    pass: password
   }
 });
 
 var mailOptions = {
-  from: "sang.lequang97@gmail.com",
+  from: "Nodejs maler",
   to: "sang.lequang94@gmail.com",
   subject: "Sending Email using Node.js",
-  text: "That was easy!"
+  html: `<h2>That not differcute</h2>`
 };
-
-transporter.sendMail(mailOptions, function(error, info) {
-  if (error) {
-    console.log(error);
-  } else {
-    console.log("Email sent: " + info.response);
-  }
-});
 
 app.get("/", (req, res) => {
   res.send("hello world");
+});
+app.post("/send-email", (req, res) => {
+  var body = req.body;
+
+  mailOptions.to = body.to;
+  mailOptions.subject = body.subject;
+
+  transporter.sendMail(mailOptions, function(error, info) {
+    if (error) {
+      console.log(error);
+      res.json(400, "Erro");
+    } else {
+      console.log("Email sent: " + info.response);
+      res.json({ message: "Thanh Cong", info: info.response });
+    }
+  });
 });
 app.listen(port, () => console.log(`server is running on port ${port}`));
